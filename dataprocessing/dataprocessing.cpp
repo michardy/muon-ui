@@ -30,9 +30,11 @@ class fallingedgecount {
 	// bits 0-4: TMC count whatever that means
 	// Units? Who knows
 	// Endianness?
-	unsigned char TMC;
+	unsigned char tmc;
 	// bit 5: is it a rising edge
-	bool RE;
+	bool re;
+	// Initialize based on hex string
+	void set(std::string hex);
 };
 
 class daqstatus {
@@ -110,6 +112,12 @@ void risingedgecount::set(std::string hex) {
 	re = buffer & 32; // bit 5
 	reserved = buffer & 64; // bit 7
 	event_new = buffer & 128; // bit 8
+}
+
+void fallingedgecount::set(std::string hex) {
+	int buffer = std::stoi (hex,nullptr,16);
+	tmc = buffer & 31; // first 5 bits
+	re = buffer & 32; // bit 5
 }
 
 void queue_push (char *test) {
