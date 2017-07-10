@@ -27,5 +27,9 @@ emsdk install latest
 emsdk activate latest
 ```
 
+## Building
+Use `make update` to build the dataprocessing program and copy it to the dev folder.  
+Use `make release` to build the dataprocessing program, copy it to the dev folder and minify and copy the dev flder to release.  
+
 ### Warning
 This is a site with a makefile.  You have been warned.
