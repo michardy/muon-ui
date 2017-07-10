@@ -83,6 +83,9 @@ class message {
 		// Time of the last GPS time update
 		struct tm gps_update;
 
+		// Milliseconds of the last GPS time update
+		unsigned short gps_milliseconds;
+
 		// Is the GPS data valid
 		bool gps_valid;
 
@@ -194,12 +197,15 @@ message deserialize_string(std::string line) {
 			case 14:
 				m.daqstat.set(component);
 				break;
+			case 15:
+				m.skew = std::stoi(component, nullptr, 0);
 			default:
 				break;
 		}
 		iter++;
 	}
 	strptime(gps_time, "%H%M%S%d%m%y", &m.gps_update);
+	m.gps_milliseconds = std::stoul(gps_ms, nullptr, 0);
 	return m;
 }
 
