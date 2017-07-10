@@ -4,21 +4,26 @@
 #include <sstream>
 #include <ctime>
 
+#include <iostream>
+
 std::vector<std::string> queue; //can't use char[72] so we use a string
 
 extern "C" void queue_push (char *test);
 
 class risingedgecount {
-	// bits 0-4: TMC count whatever that means
-	// Units? Who knows
-	// Endianness?
-	unsigned char tmc;
-	// bit 5: is it a rising edge
-	bool re;
-	// Its reserved, OR ELSE
-	bool reserved;
-	// Is it a new event
-	bool event_new;
+	public:
+		// bits 0-4: TMC count whatever that means
+		// Units? Who knows
+		// Endianness?
+		unsigned char tmc;
+		// bit 5: is it a rising edge
+		bool re;
+		// Its reserved, OR ELSE
+		bool reserved;
+		// Is it a new event
+		bool event_new;
+		// Initialize based on hex string
+		void set(std::string hex);
 };
 
 class fallingedgecount {
@@ -98,6 +103,16 @@ class message {
 	// GPS to PPS skew
 	short skew;
 };
+
+void risingedgecount::set(std::string hex) {
+	std::stringstream s;
+	char buffer;
+	s << std::hex << hex;
+	buffer << s;
+	std::cout << (int)buffer << std::endl;
+	tmc = buffer & 31;
+	std::cout << (int)tmc << std::endl;
+}
 
 void queue_push (char *test) {
 	std::stringstream s;
