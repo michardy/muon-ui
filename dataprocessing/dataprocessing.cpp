@@ -142,13 +142,3 @@ void queue_push (char *test) {
 		}
 	}
 }
-
-int main() {
-	EM_ASM(
-		alert('hello world!');
-	);
-	risingedgecount rsc;
-	std::string str("3A");
-	rsc.set(str);
-	return 0;
-}
