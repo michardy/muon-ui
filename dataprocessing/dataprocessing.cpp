@@ -136,7 +136,9 @@ message deserialize_string(std::string line) {
 
 	unsigned char iter = 0; // Iterator. What part of the message are we on?
 
-	while (std::getline(s, line)) { //loop through all the components
+	char gps_time[16]; // GPS time comes in two chunks so we have to combine them before processing
+
+	while (std::getline(s, component, ' ')) { //loop through all the components
 		switch(iter) {
 			case 0:
 				m.trigger = std::stoul(component, nullptr, 16);
@@ -165,11 +167,20 @@ message deserialize_string(std::string line) {
 				m.gps_cpld = std::stoul(component, nullptr, 16);
 				break;
 			case 10:
-				// TODO: date deserialization
+				for (int i = 0; i < 10; i++) {
+					gps_time[i] = *(component.c_str() + i);
+				}
+				break;
+			case 11:
+				for (int i = 0; i < 6; i++) {
+					gps_time[i+10] = *(component.c_str() + i);
+				}
+				gps_time[10] = *component.c_str();
 				break;
 			default:
 				break;
 		}
+		iter++;
 	}
 	return m;
 }
