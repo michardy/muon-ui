@@ -6,10 +6,10 @@
 
 #include <iostream>
 
-std::vector<std::string> queue; //can't use char[72] so we use a string
-
-extern "C" void queue_push (char *test); // Should this still be a global?
+std::vector<std::string> queue; // Should this still be a global?
 // Leaving it a global reduces re-allocation
+
+extern "C" void queue_push (char *test);
 
 class risingedgecount {
 	public:
