@@ -106,8 +106,8 @@ void risingedgecount::set(std::string hex) {
 	unsigned long buffer = std::stoul(hex,nullptr,16);
 	tmc = buffer & 31; // first 5 bits
 	re = buffer & 32; // bit 5
-	reserved = buffer & 64; // bit 7
-	event_new = buffer & 128; // bit 8
+	reserved = buffer & 64; // bit 6
+	event_new = buffer & 128; // bit 7
 }
 
 void fallingedgecount::set(std::string hex) {
