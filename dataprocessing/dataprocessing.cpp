@@ -100,7 +100,7 @@ std::vector<message> queue; // Should this still be a global?
 // Leaving it a global reduces re-allocation
 
 void risingedgecount::set(std::string hex) {
-	int buffer = std::stoi (hex,nullptr,16);
+	unsigned long buffer = std::stoul(hex,nullptr,16);
 	tmc = buffer & 31; // first 5 bits
 	re = buffer & 32; // bit 5
 	reserved = buffer & 64; // bit 7
@@ -108,7 +108,7 @@ void risingedgecount::set(std::string hex) {
 }
 
 void fallingedgecount::set(std::string hex) {
-	int buffer = std::stoi (hex,nullptr,16);
+	unsigned long buffer = std::stoul(hex,nullptr,16);
 	tmc = buffer & 31; // first 5 bits
 	re = buffer & 32; // bit 5
 }
