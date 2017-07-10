@@ -81,7 +81,7 @@ class message {
 		unsigned long gps_cpld;
 
 		// Time of the last GPS time update
-		time_t gps_update;
+		struct tm gps_update;
 
 		// Is the GPS data valid
 		bool gps_valid;
@@ -136,7 +136,8 @@ message deserialize_string(std::string line) {
 
 	unsigned char iter = 0; // Iterator. What part of the message are we on?
 
-	char gps_time[16]; // GPS time comes in two chunks so we have to combine them before processing
+	char gps_time[12]; // GPS time comes in two chunks so we have to combine them before processing
+	char gps_ms[12]; // GPS time includes milliseconds time_t does not
 
 	while (std::getline(s, component, ' ')) { //loop through all the components
 		switch(iter) {
@@ -148,40 +149,57 @@ message deserialize_string(std::string line) {
 				break;
 			case 2:
 				m.fe[0].set(component);
+				break;
 			case 3:
 				m.re[1].set(component);
 				break;
 			case 4:
 				m.fe[1].set(component);
+				break;
 			case 5:
 				m.re[2].set(component);
 				break;
 			case 6:
 				m.fe[2].set(component);
+				break;
 			case 7:
 				m.re[3].set(component);
 				break;
 			case 8:
 				m.fe[3].set(component);
+				break;
 			case 9:
 				m.gps_cpld = std::stoul(component, nullptr, 16);
 				break;
 			case 10:
-				for (int i = 0; i < 10; i++) {
+				for (int i = 0; i < 6; i++) {
 					gps_time[i] = *(component.c_str() + i);
+				}
+				for (int i = 0; i < 4; i++) {
+					gps_ms[i] = *(component.c_str() + i + 6);
 				}
 				break;
 			case 11:
 				for (int i = 0; i < 6; i++) {
-					gps_time[i+10] = *(component.c_str() + i);
+					gps_time[i+6] = *(component.c_str() + i);
 				}
 				gps_time[10] = *component.c_str();
+				break;
+			case 12:
+				m.gps_valid = ("A" == component);
+				break;
+			case 13:
+				m.sat_num = std::stoul(component, nullptr, 0);
+				break;
+			case 14:
+				m.daqstat.set(component);
 				break;
 			default:
 				break;
 		}
 		iter++;
 	}
+	strptime(gps_time, "%H%M%S%d%m%y", &m.gps_update);
 	return m;
 }
 
