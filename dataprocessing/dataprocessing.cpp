@@ -53,6 +53,8 @@ class daqstatus {
 		// bit 3: I have to quote here
 		// "Current or last 1PPS rate is not within 41666666 ±50 CPLD clock tick.s (This is a result of a GPS glitch, the DAQ uC being busy, or the CPLD oscillator not tuned correctly.)"
 		bool cpld_pps_mismatch;
+
+		// Intialize based on hex string
 		void set(std::string hex);
 };
 
@@ -63,47 +65,30 @@ class message {
 	// What does it mean? Only God knows
 	// Endianness?
 	unsigned long trigger;
-	
-	// Count of rising edge @ input 0
-	risingedgecount re0;
-	
-	// Count of falling edge @ input 0
-	fallingedgecount fe0;
-	
-	// Count of rising edge @ input 1
-	risingedgecount re1;
-	
-	// Count of falling edge @ input 1
-	fallingedgecount fe1;
-	
-	// Count of rising edge @ input 2
-	risingedgecount re2;
-	
-	// Count of falling edge @ input 2
-	fallingedgecount fe2;
-	
-	// Count of rising edge @ input 3
-	risingedgecount re3;
-	
-	// Count of falling edge @ input 4
-	fallingedgecount fe3;
-	
+
+	// In the serialized message the next two arrays are interleaved.
+	// But why make things hard when we need not
+	// Count of rising edge for inputs 0-3
+	risingedgecount[4] re;
+	// Count of falling edge for inputs 0-3
+	fallingedgecount[4] fe;
+
 	// CPLD count of time pulse from GPS
 	// Endianness?
 	unsigned long CPLD;
-	
+
 	// Time of the last GPS time update
 	time_t gps_update;
-	
+
 	// Is the GPS data valid
 	bool gps_valid;
-	
+
 	// Number of visible GPS satellites
 	unsigned char sat_num;
-	
+
 	// DAQ status
 	daqstatus daqstat;
-	
+
 	// GPS to PPS skew
 	short skew;
 };
