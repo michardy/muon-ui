@@ -131,10 +131,5 @@ int main() {
 	EM_ASM(
 		alert('hello world!');
 	);
-	while (true) {
-		if (queue.size() > 0) {
-			;
-		}
-	}
 	return 0;
 }
