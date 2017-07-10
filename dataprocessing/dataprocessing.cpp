@@ -16,11 +16,11 @@ class risingedgecount {
 		// Units? Who knows
 		// Endianness?
 		unsigned char tmc;
-		// bit 5: is it a rising edge
+		// bit 5: Is it a rising edge?
 		bool re;
-		// Its reserved, OR ELSE
+		// bit 6: Its reserved, OR ELSE
 		bool reserved;
-		// Is it a new event
+		// bit 7: Is it a new event?
 		bool event_new;
 		// Initialize based on hex string
 		void set(std::string hex);
@@ -105,13 +105,11 @@ class message {
 };
 
 void risingedgecount::set(std::string hex) {
-	std::stringstream s;
-	char buffer;
-	s << std::hex << hex;
-	buffer << s;
-	std::cout << (int)buffer << std::endl;
-	tmc = buffer & 31;
-	std::cout << (int)tmc << std::endl;
+	int buffer = std::stoi (hex,nullptr,16);
+	tmc = buffer & 31; // first 5 bits
+	re = buffer & 32; // bit 5
+	reserved = buffer & 64; // bit 7
+	event_new = buffer & 128; // bit 8
 }
 
 void queue_push (char *test) {
@@ -131,5 +129,8 @@ int main() {
 	EM_ASM(
 		alert('hello world!');
 	);
+	risingedgecount rsc;
+	std::string str("3A");
+	rsc.set(str);
 	return 0;
 }
