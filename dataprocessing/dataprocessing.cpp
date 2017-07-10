@@ -6,8 +6,6 @@
 
 #include <iostream>
 
-std::vector<std::string> queue; // Should this still be a global?
-// Leaving it a global reduces re-allocation
 
 extern "C" void queue_push (char *test);
 
@@ -28,14 +26,15 @@ class risingedgecount {
 };
 
 class fallingedgecount {
-	// bits 0-4: TMC count whatever that means
-	// Units? Who knows
-	// Endianness?
-	unsigned char tmc;
-	// bit 5: is it a rising edge
-	bool re;
-	// Initialize based on hex string
-	void set(std::string hex);
+	public:
+		// bits 0-4: TMC count whatever that means
+		// Units? Who knows
+		// Endianness?
+		unsigned char tmc;
+		// bit 5: is it a rising edge
+		bool re;
+		// Initialize based on hex string
+		void set(std::string hex);
 };
 
 class daqstatus {
@@ -62,39 +61,43 @@ class daqstatus {
 };
 
 class message {
-	// Do we use little endian or big?  It would be nice to know!
-	
-	// 32 bit clock trigger count. Do not read data if value is 0
-	// What does it mean? Only God knows
-	// Endianness?
-	unsigned long trigger;
+	public:
+		// Do we use little endian or big?  It would be nice to know!
 
-	// In the serialized message the next two arrays are interleaved.
-	// But why make things hard when we need not
-	// Count of rising edge for inputs 0-3
-	risingedgecount[4] re;
-	// Count of falling edge for inputs 0-3
-	fallingedgecount[4] fe;
+		// 32 bit clock trigger count. Do not read data if value is 0
+		// What does it mean? Only God knows
+		// Endianness?
+		unsigned long trigger;
 
-	// CPLD count of time pulse from GPS
-	// Endianness?
-	unsigned long CPLD;
+		// In the serialized message the next two arrays are interleaved.
+		// But why make things hard when we need not
+		// Count of rising edge for inputs 0-3
+		risingedgecount re[4];
+		// Count of falling edge for inputs 0-3
+		fallingedgecount fe[4];
 
-	// Time of the last GPS time update
-	time_t gps_update;
+		// CPLD count of time pulse from GPS
+		// Endianness?
+		unsigned long gps_cpld;
 
-	// Is the GPS data valid
-	bool gps_valid;
+		// Time of the last GPS time update
+		time_t gps_update;
 
-	// Number of visible GPS satellites
-	unsigned char sat_num;
+		// Is the GPS data valid
+		bool gps_valid;
 
-	// DAQ status
-	daqstatus daqstat;
+		// Number of visible GPS satellites
+		unsigned char sat_num;
 
-	// GPS to PPS skew
-	short skew;
+		// DAQ status
+		daqstatus daqstat;
+
+		// GPS to PPS skew
+		short skew;
 };
+
+std::vector<message> queue; // Should this still be a global?
+// Leaving it a global reduces re-allocation
 
 void risingedgecount::set(std::string hex) {
 	int buffer = std::stoi (hex,nullptr,16);
@@ -122,22 +125,69 @@ void queue_read(){
 	
 }
 
-void deserialize_string(std::string hex) {
-	
+message deserialize_string(std::string line) {
+	message m; // final output, parsed message
+
+	// Convert line to stringstream so we can iterate through it
+	std::stringstream s;
+	s << line;
+
+	std::string component; //holds a component
+
+	unsigned char iter = 0; // Iterator. What part of the message are we on?
+
+	while (std::getline(s, line)) { //loop through all the components
+		switch(iter) {
+			case 0:
+				m.trigger = std::stoul(component, nullptr, 16);
+				break;
+			case 1:
+				m.re[0].set(component);
+				break;
+			case 2:
+				m.fe[0].set(component);
+			case 3:
+				m.re[1].set(component);
+				break;
+			case 4:
+				m.fe[1].set(component);
+			case 5:
+				m.re[2].set(component);
+				break;
+			case 6:
+				m.fe[2].set(component);
+			case 7:
+				m.re[3].set(component);
+				break;
+			case 8:
+				m.fe[3].set(component);
+			case 9:
+				m.gps_cpld = std::stoul(component, nullptr, 16);
+				break;
+			case 10:
+				// TODO: date deserialization
+				break;
+			default:
+				break;
+		}
+	}
+	return m;
 }
 
 void queue_push (char *test) {
 	std::stringstream s;
-	s << test; //Create a stream
+	s << test; // Initialize stream
 	std::string line; //holds a line
 	while (std::getline(s, line)) { //loop through all the lines
 		if (line.length() > 72) { //why 72? a line is 72 bytes plus a \r\n
 			queue.push_back(
-				line.substr(0, 71) //ditch the \r\n
+				deserialize_string(
+					line.substr(0, 71) //ditch the \r\n
+				)
 			);
 		}
 	}
-	if queue.size() > 0 {
-		queue_read()
+	if (queue.size() > 0) {
+		queue_read();
 	}
 }
