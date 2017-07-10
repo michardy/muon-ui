@@ -8,7 +8,8 @@
 
 std::vector<std::string> queue; //can't use char[72] so we use a string
 
-extern "C" void queue_push (char *test);
+extern "C" void queue_push (char *test); // Should this still be a global?
+// Leaving it a global reduces re-allocation
 
 class risingedgecount {
 	public:
@@ -51,7 +52,9 @@ class daqstatus {
 		bool gps_corrupt;
 
 		// bit 3: I have to quote here
-		// "Current or last 1PPS rate is not within 41666666 ±50 CPLD clock tick.s (This is a result of a GPS glitch, the DAQ uC being busy, or the CPLD oscillator not tuned correctly.)"
+		// "Current or last 1PPS rate is not within 41666666 ±50 CPLD 
+		// clock tick.s (This is a result of a GPS glitch, the DAQ uC 
+		// being busy, or the CPLD oscillator not tuned correctly.)"
 		bool cpld_pps_mismatch;
 
 		// Intialize based on hex string
@@ -115,6 +118,14 @@ void daqstatus::set(std::string hex) {
 	cpld_pps_mismatch = buffer & 8; // bit 3
 }
 
+void queue_read(){
+	
+}
+
+void deserialize_string(std::string hex) {
+	
+}
+
 void queue_push (char *test) {
 	std::stringstream s;
 	s << test; //Create a stream
@@ -125,5 +136,8 @@ void queue_push (char *test) {
 				line.substr(0, 71) //ditch the \r\n
 			);
 		}
+	}
+	if queue.size() > 0 {
+		queue_read()
 	}
 }
