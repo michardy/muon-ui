@@ -38,20 +38,22 @@ class fallingedgecount {
 };
 
 class daqstatus {
-	// Endianness?
-	
-	// bit 0: is the PPS count up to date
-	bool ppsc;
-	
-	// bit 1: is the trigger (what's this?)
-	bool trig_interrrupt;
-	
-	// bit 2: is the GPS data corrupted
-	bool gps_corrupt;
-	
-	// bit 3: I have to quote here
-	// "Current or last 1PPS rate is not within 41666666 ±50 CPLD clock tick.s (This is a result of a GPS glitch, the DAQ uC being busy, or the CPLD oscillator not tuned correctly.)"
-	bool cpld_pps_mismatch;
+	public:
+		// Endianness?
+
+		// bit 0: is the PPS count up to date
+		bool ppsc;
+
+		// bit 1: is the trigger (what's this?)
+		bool trig_interrrupt;
+
+		// bit 2: is the GPS data corrupted
+		bool gps_corrupt;
+
+		// bit 3: I have to quote here
+		// "Current or last 1PPS rate is not within 41666666 ±50 CPLD clock tick.s (This is a result of a GPS glitch, the DAQ uC being busy, or the CPLD oscillator not tuned correctly.)"
+		bool cpld_pps_mismatch;
+		void set(std::string hex);
 };
 
 class message {
@@ -118,6 +120,14 @@ void fallingedgecount::set(std::string hex) {
 	int buffer = std::stoi (hex,nullptr,16);
 	tmc = buffer & 31; // first 5 bits
 	re = buffer & 32; // bit 5
+}
+
+void daqstatus::set(std::string hex) {
+	int buffer = std::stoi (hex,nullptr,16);
+	ppsc = buffer & 1; // bit 0
+	trig_interrrupt = buffer & 2; // bit 1
+	gps_corrupt = buffer & 4; // bit 2
+	cpld_pps_mismatch = buffer & 8; // bit 3
 }
 
 void queue_push (char *test) {
