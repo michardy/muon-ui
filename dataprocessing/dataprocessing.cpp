@@ -140,7 +140,7 @@ message deserialize_string(std::string line) {
 	unsigned char iter = 0; // Iterator. What part of the message are we on?
 
 	char gps_time[12]; // GPS time comes in two chunks so we have to combine them before processing
-	char gps_ms[12]; // GPS time includes milliseconds time_t does not
+	char gps_ms[3]; // GPS time includes milliseconds time_t does not
 
 	while (std::getline(s, component, ' ')) { //loop through all the components
 		switch(iter) {
@@ -178,8 +178,8 @@ message deserialize_string(std::string line) {
 				for (int i = 0; i < 6; i++) {
 					gps_time[i] = *(component.c_str() + i);
 				}
-				for (int i = 0; i < 4; i++) {
-					gps_ms[i] = *(component.c_str() + i + 6);
+				for (int i = 0; i < 3; i++) {
+					gps_ms[i] = *(component.c_str() + i + 7);
 				}
 				break;
 			case 11:

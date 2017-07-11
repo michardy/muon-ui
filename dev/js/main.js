@@ -1,4 +1,4 @@
-var ws = new WebSocket("ws://"+window.location.host+"/socket");
+var ws = new WebSocket("ws://"+window.location.hostname+":8888/socket");
 ws.onopen = function() {
 	ws.send("Hello Server");
 };
