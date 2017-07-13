@@ -4,6 +4,7 @@ release:
 	mkdir release/img
 	mkdir release/js
 	mkdir release/css
+	/bin/bash;\
 	source ~/emsdk-portable/emsdk_env.sh;\
 	cd dataprocessing/;\
 	emcc dataprocessing.cpp -Oz -s WASM=1 -s EXPORTED_FUNCTIONS="['_queue_push']"
@@ -17,6 +18,7 @@ release:
 	for i in *.png; do optipng -o7 --dir ../release/img "$i"; done
 
 update:
+	/bin/bash;\
 	source ~/emsdk-portable/emsdk_env.sh;\
 	cd dataprocessing/;\
 	emcc dataprocessing.cpp -Oz -s WASM=1 -s EXPORTED_FUNCTIONS="['_queue_push']"
