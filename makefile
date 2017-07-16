@@ -13,7 +13,7 @@ release:
 	sed -i -e 's/a.out./bin\/dataprocessing./g' release/bin/dataprocessing.js
 	cp dataprocessing/a.out.wasm release/bin/dataprocessing.wasm
 	cp dev/index.html release/index.html
-	cp dev/img release/img
+	cp -r dev/img release
 	uglifyjs dev/js/main.js -c -m -o release/js/main.js
 	uglifycss dev/css/style.css > release/css/style.css
 
