@@ -12,10 +12,9 @@ release:
 	sed -i -e 's/a.out./bin\/dataprocessing./g' release/bin/dataprocessing.js
 	cp dataprocessing/a.out.wasm release/bin/dataprocessing.wasm
 	cp dev/index.html release/index.html
+	cp dev/img release/img
 	uglifyjs dev/js/main.js -c -m -o release/js/main.js
 	uglifycss dev/css/style.css > release/css/style.css
-	cd dev/img;\
-	for i in *.png; do optipng -o7 --dir ../release/img "$i"; done
 
 update:
 	/bin/bash;\

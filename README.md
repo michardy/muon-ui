@@ -14,7 +14,6 @@ Use your package manger to install:
 - make
 - uglifyjs
 - uglifycss
-- optipng
 
 Install emscripten:
 
