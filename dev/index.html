@@ -6,9 +6,15 @@
 		<title>Muon Detector</title>
 	</head>
 	<body>
-		<div id="grapharea">
-			<img src=""></img>
-			<canvas id="fourinputgraph"></canvas>
+		<!--Warning: the following is built by someone who does not build good user interface-->
+		<h1>Cosmic Ray Muon Detector</h1>
+		<div id="gridarea">
+			<!--Kinda klugy svg-->
+			<img id="fake_detector" src="img/drawing.svg"></img>
+			<canvas id="grapharea"></canvas>
+			<div id="real_detector">
+				<img src="img/detector.jpg"></img>
+			</div>
 		</div>
 		<script src="js/main.js"></script>
 	</body>
