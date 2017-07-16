@@ -60,14 +60,20 @@ class daqstatus {
 		void set(std::string hex);
 };
 
+class daq_time {
+	public:
+		struct tm time;
+		unsigned short tenthousandths;
+		unsigned long ticks;
+		void skew(short skew);
+		void init(tm time, short gps_ms, unsigned long tick, unsigned long gps_tick);
+};
+
 class message {
 	public:
 		// Do we use little endian or big?  It would be nice to know!
 
-		// 32 bit clock trigger count. Do not read data if value is 0
-		// What does it mean? Only God knows
-		// Endianness?
-		unsigned long trigger;
+		daq_time time;
 
 		// In the serialized message the next two arrays are interleaved.
 		// But why make things hard when we need not
@@ -75,16 +81,6 @@ class message {
 		risingedgecount re[4];
 		// Count of falling edge for inputs 0-3
 		fallingedgecount fe[4];
-
-		// CPLD count of time pulse from GPS
-		// Endianness?
-		unsigned long gps_cpld;
-
-		// Time of the last GPS time update
-		struct tm gps_update;
-
-		// Milliseconds of the last GPS time update
-		unsigned short gps_milliseconds;
 
 		// Is the GPS data valid
 		bool gps_valid;
@@ -94,9 +90,6 @@ class message {
 
 		// DAQ status
 		daqstatus daqstat;
-
-		// GPS to PPS skew
-		short skew;
 };
 
 std::vector<message> queue; // Should this still be a global?
@@ -124,6 +117,22 @@ void daqstatus::set(std::string hex) {
 	cpld_pps_mismatch = buffer & 8; // bit 3
 }
 
+void daq_time::skew(short skew) {
+	time.tm_sec--;
+	tenthousandths += 10000;
+	tenthousandths += (skew * 10);
+	while (tenthousandths >= 10000) {
+		tenthousandths -= 10000;
+		time.tm_sec++;
+	}
+}
+
+void daq_time::init (tm time, short gps_ms, unsigned long tick, unsigned long gps_tick){
+	//time = time;
+	tenthousandths = (gps_ms * 10);
+	ticks = (tick - gps_tick) % (4294967295); // modulo subtract because this slong overflows every 100 sec
+}
+
 void queue_read(){
 	
 }
@@ -140,12 +149,18 @@ message deserialize_string(std::string line) {
 	unsigned char iter = 0; // Iterator. What part of the message are we on?
 
 	char gps_time[12]; // GPS time comes in two chunks so we have to combine them before processing
-	char gps_ms[3]; // GPS time includes milliseconds time_t does not
+	char gps_ms_char[3]; // GPS time includes milliseconds time_t does not
+
+	struct tm gps_update;
+	unsigned long trigger = 0;
+	unsigned long gps_cpld = 0;
+	unsigned short gps_ms = 0;
+	short skew = 0;
 
 	while (std::getline(s, component, ' ')) { //loop through all the components
 		switch(iter) {
 			case 0:
-				m.trigger = std::stoul(component, nullptr, 16);
+				trigger = std::stoul(component, nullptr, 16);
 				break;
 			case 1:
 				m.re[0].set(component);
@@ -172,14 +187,14 @@ message deserialize_string(std::string line) {
 				m.fe[3].set(component);
 				break;
 			case 9:
-				m.gps_cpld = std::stoul(component, nullptr, 16);
+				gps_cpld = std::stoul(component, nullptr, 16);
 				break;
 			case 10:
 				for (int i = 0; i < 6; i++) {
 					gps_time[i] = *(component.c_str() + i);
 				}
 				for (int i = 0; i < 3; i++) {
-					gps_ms[i] = *(component.c_str() + i + 7);
+					gps_ms_char[i] = *(component.c_str() + i + 7);
 				}
 				break;
 			case 11:
@@ -198,14 +213,16 @@ message deserialize_string(std::string line) {
 				m.daqstat.set(component);
 				break;
 			case 15:
-				m.skew = std::stoi(component, nullptr, 0);
+				skew = std::stoi(component, nullptr, 0);
 			default:
 				break;
 		}
 		iter++;
 	}
-	strptime(gps_time, "%H%M%S%d%m%y", &m.gps_update);
-	m.gps_milliseconds = std::stoul(gps_ms, nullptr, 0);
+	strptime(gps_time, "%H%M%S%d%m%y", &gps_update);
+	gps_ms = std::stoul(gps_ms_char, nullptr, 0);
+	m.time.init(gps_update, gps_ms, trigger, gps_cpld);
+	m.time.skew(skew);
 	return m;
 }
 
