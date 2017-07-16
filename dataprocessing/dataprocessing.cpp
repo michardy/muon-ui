@@ -62,10 +62,16 @@ class daqstatus {
 
 class daq_time {
 	public:
+		// time
 		struct tm time;
+		// tenthousandths of a second past the second mark
 		unsigned short tenthousandths;
+		// 24 ns resolution ticks
 		unsigned long ticks;
+		// add clock skew
 		void skew(short skew);
+		// create things
+		// why not daq_time::daq_time? I should fix this later but I was too lazy to refactor the message class.
 		void init(tm time, short gps_ms, unsigned long tick, unsigned long gps_tick);
 };
 
