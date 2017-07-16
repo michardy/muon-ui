@@ -1,13 +1,14 @@
+SHELL := /bin/bash
+
 release:
 	mkdir release
 	mkdir release/bin
 	mkdir release/img
 	mkdir release/js
 	mkdir release/css
-	/bin/bash;\
 	source ~/emsdk-portable/emsdk_env.sh;\
 	cd dataprocessing/;\
-	emcc dataprocessing.cpp -Oz -s WASM=1 -s EXPORTED_FUNCTIONS="['_queue_push']"
+	emcc dataprocessing.cpp -Oz -s WASM=1 -s EXPORTED_FUNCTIONS="['_queue_push']";
 	cp dataprocessing/a.out.js release/bin/dataprocessing.js
 	sed -i -e 's/a.out./bin\/dataprocessing./g' release/bin/dataprocessing.js
 	cp dataprocessing/a.out.wasm release/bin/dataprocessing.wasm
@@ -17,7 +18,6 @@ release:
 	uglifycss dev/css/style.css > release/css/style.css
 
 update:
-	/bin/bash;\
 	source ~/emsdk-portable/emsdk_env.sh;\
 	cd dataprocessing/;\
 	emcc dataprocessing.cpp -Oz -s WASM=1 -s EXPORTED_FUNCTIONS="['_queue_push']"
