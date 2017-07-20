@@ -9,6 +9,14 @@
 
 extern "C" void queue_push (char *test);
 
+extern "C" bool get_index_0();
+
+extern "C" bool get_index_1();
+
+extern "C" bool get_index_2();
+
+extern "C" bool get_index_3();
+
 class risingedgecount {
 	public:
 		// bits 0-4: TMC count whatever that means
@@ -248,4 +256,20 @@ void queue_push (char *test) {
 	if (queue.size() > 0) {
 		queue_read();
 	}
+}
+
+bool get_index_0() {
+	return 0;
+}
+
+bool get_index_1() {
+	return 0;
+}
+
+bool get_index_2() {
+	return 0;
+}
+
+bool get_index_3() {
+	return 0;
 }
