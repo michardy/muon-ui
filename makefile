@@ -8,7 +8,7 @@ release:
 	mkdir release/css
 	source ~/emsdk-portable/emsdk_env.sh;\
 	cd dataprocessing/;\
-	emcc dataprocessing.cpp -Oz -s WASM=1 -s EXPORTED_FUNCTIONS="['_queue_push']";
+	emcc dataprocessing.cpp -Oz -s WASM=1 -s EXPORTED_FUNCTIONS="['_queue_push', '_get_index_0', '_get_index_1', '_get_index_2', '_get_index_3']";
 	cp dataprocessing/a.out.js release/bin/dataprocessing.js
 	sed -i -e 's/a.out./bin\/dataprocessing./g' release/bin/dataprocessing.js
 	cp dataprocessing/a.out.wasm release/bin/dataprocessing.wasm
@@ -20,7 +20,7 @@ release:
 update:
 	source ~/emsdk-portable/emsdk_env.sh;\
 	cd dataprocessing/;\
-	emcc dataprocessing.cpp -Oz -s WASM=1 -s EXPORTED_FUNCTIONS="['_queue_push']"
+	emcc dataprocessing.cpp -Oz -s WASM=1 -s EXPORTED_FUNCTIONS="['_queue_push', '_get_index_0', '_get_index_1', '_get_index_2', '_get_index_3']"
 	cp dataprocessing/a.out.js dev/bin/dataprocessing.js
 	sed -i -e 's/a.out./bin\/dataprocessing./g' dev/bin/dataprocessing.js
 	cp dataprocessing/a.out.wasm dev/bin/dataprocessing.wasm
