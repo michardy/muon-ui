@@ -9,13 +9,13 @@
 
 extern "C" void queue_push (char *test);
 
-extern "C" bool get_index_0();
+extern "C" char get_index_0();
 
-extern "C" bool get_index_1();
+extern "C" char get_index_1();
 
-extern "C" bool get_index_2();
+extern "C" char get_index_2();
 
-extern "C" bool get_index_3();
+extern "C" char get_index_3();
 
 class risingedgecount {
 	public:
@@ -124,6 +124,8 @@ void fallingedgecount::set(std::string hex) {
 }
 
 void daqstatus::set(std::string hex) {
+	// Like the rising/falling bytes we encode this using bit packing to take up less space.
+	// Then we make it take up twice as much space by hex encoding it.  (What?)
 	int buffer = std::stoi (hex,nullptr,16);
 	ppsc = buffer & 1; // bit 0
 	trig_interrrupt = buffer & 2; // bit 1
@@ -132,9 +134,16 @@ void daqstatus::set(std::string hex) {
 }
 
 void daq_time::skew(short skew) {
+	// Offset the time of the event by the clock skew at the end of the message
+	
+	// Prevent offset > tenthousandths place from making clock go negative
 	time.tm_sec--;
 	tenthousandths += 10000;
+	
+	// Add skew
 	tenthousandths += (skew * 10);
+	
+	// If tenthousandths place >= 1 sec move up to seconds
 	while (tenthousandths >= 10000) {
 		tenthousandths -= 10000;
 		time.tm_sec++;
@@ -142,7 +151,6 @@ void daq_time::skew(short skew) {
 }
 
 void daq_time::init (tm time, short gps_ms, unsigned long tick, unsigned long gps_tick){
-	//time = time;
 	tenthousandths = (gps_ms * 10);
 	ticks = (tick - gps_tick) % (4294967295); // modulo subtract because this slong overflows every 100 sec
 }
@@ -171,72 +179,73 @@ message deserialize_string(std::string line) {
 	unsigned short gps_ms = 0;
 	short skew = 0;
 
-	while (std::getline(s, component, ' ')) { //loop through all the components
+	while (std::getline(s, component, ' ')) { // Split by spaces and loop through all the components
 		switch(iter) {
-			case 0:
+			case 0: // Get the clock value at trigger
 				trigger = std::stoul(component, nullptr, 16);
 				break;
-			case 1:
+			case 1: // Rising edge 0
 				m.re[0].set(component);
 				break;
-			case 2:
+			case 2: // Falling edge 0
 				m.fe[0].set(component);
 				break;
-			case 3:
+			case 3: // Rising edge 1
 				m.re[1].set(component);
 				break;
-			case 4:
+			case 4: // Falling edge 1
 				m.fe[1].set(component);
 				break;
-			case 5:
+			case 5: // Rising edge 2
 				m.re[2].set(component);
 				break;
-			case 6:
+			case 6: // Falling edge 2
 				m.fe[2].set(component);
 				break;
-			case 7:
+			case 7: // Rising edge 3
 				m.re[3].set(component);
 				break;
-			case 8:
+			case 8: // Falling edge 3
 				m.fe[3].set(component);
 				break;
-			case 9:
+			case 9:  // Collect clock at gps persecond pulse
 				gps_cpld = std::stoul(component, nullptr, 16);
 				break;
-			case 10:
-				for (int i = 0; i < 6; i++) {
+			case 10: // Collect HHMMSS + milliseconds part of GPS time
+				for (int i = 0; i < 6; i++) { // save HHMMSS for later processing
 					gps_time[i] = *(component.c_str() + i);
 				}
-				for (int i = 0; i < 3; i++) {
+				for (int i = 0; i < 3; i++) { // Save ms for later seperate processing
 					gps_ms_char[i] = *(component.c_str() + i + 7);
 				}
 				break;
-			case 11:
-				for (int i = 0; i < 6; i++) {
+			case 11: // Collect ddmmyy part of GPS time
+				for (int i = 0; i < 6; i++) { // Save for later
 					gps_time[i+6] = *(component.c_str() + i);
 				}
 				gps_time[10] = *component.c_str();
 				break;
-			case 12:
+			case 12: // Is the GPS data valid
+				// Lets use a strange format! 'A'' for valid and 'V' for invalid.  (I have questions.)
 				m.gps_valid = ("A" == component);
 				break;
-			case 13:
+			case 13: // Numer of visible GPS satellites
 				m.sat_num = std::stoul(component, nullptr, 0);
 				break;
-			case 14:
+			case 14: // Read the DAQ status flag (See: void daqstatus::set)
 				m.daqstat.set(component);
 				break;
-			case 15:
+			case 15: // Get the clock skew
 				skew = std::stoi(component, nullptr, 0);
 			default:
 				break;
 		}
 		iter++;
 	}
-	strptime(gps_time, "%H%M%S%d%m%y", &gps_update);
-	gps_ms = std::stoul(gps_ms_char, nullptr, 0);
-	m.time.init(gps_update, gps_ms, trigger, gps_cpld);
-	m.time.skew(skew);
+	strptime(gps_time, "%H%M%S%d%m%y", &gps_update); // Read GPS time
+	gps_ms = std::stoul(gps_ms_char, nullptr, 0);  // Read GPS MS
+	m.time.init(gps_update, gps_ms, trigger, gps_cpld); // Intialize time class
+	m.time.skew(skew); // Skew class
 	return m;
 }
 
@@ -258,18 +267,18 @@ void queue_push (char *test) {
 	}
 }
 
-bool get_index_0() {
+char get_index_0() {
 	return 0;
 }
 
-bool get_index_1() {
+char get_index_1() {
 	return 0;
 }
 
-bool get_index_2() {
+char get_index_2() {
 	return 0;
 }
 
-bool get_index_3() {
+char get_index_3() {
 	return 0;
 }
