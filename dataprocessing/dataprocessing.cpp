@@ -3,8 +3,7 @@
 #include <string>
 #include <sstream>
 #include <ctime>
-
-#include <iostream>
+#include <assert.h> 
 
 
 extern "C" void queue_push (char *test);
@@ -40,7 +39,7 @@ class fallingedgecount {
 		// Endianness?
 		unsigned char tmc;
 		// bit 5: is it a rising edge
-		bool re;
+		bool fe;
 		// Initialize based on hex string
 		void set(std::string hex);
 };
@@ -106,7 +105,17 @@ class message {
 		daqstatus daqstat;
 };
 
-std::vector<message> queue; // Should this still be a global?
+class queue {
+	private:
+		message last;
+		bool reads[4] = {false, false, false, false};
+	public:
+		std::vector<message> messages;
+		void push(message m);
+		message read(char line);
+};
+
+queue mq = queue(); // Should this still be a global?
 // Leaving it a global reduces re-allocation
 
 void risingedgecount::set(std::string hex) {
@@ -120,7 +129,7 @@ void risingedgecount::set(std::string hex) {
 void fallingedgecount::set(std::string hex) {
 	unsigned long buffer = std::stoul(hex,nullptr,16);
 	tmc = buffer & 31; // first 5 bits
-	re = buffer & 32; // bit 5
+	fe = buffer & 32; // bit 5
 }
 
 void daqstatus::set(std::string hex) {
@@ -155,8 +164,21 @@ void daq_time::init (tm time, short gps_ms, unsigned long tick, unsigned long gp
 	ticks = (tick - gps_tick) % (4294967295); // modulo subtract because this slong overflows every 100 sec
 }
 
-void queue_read(){
-	
+void queue::push(message m) {
+	messages.push_back(m);
+}
+
+message queue::read(char line){
+	reads[line] = true;
+	return messages[messages.size()];
+	char sum = 0;
+	for (char i = 0; i < 4; i++) {
+		sum += reads[i];
+	}
+	assert(sum > 4);
+	if (sum == 4) {
+		messages.pop_back();
+	}
 }
 
 message deserialize_string(std::string line) {
@@ -255,30 +277,59 @@ void queue_push (char *test) {
 	std::string line; //holds a line
 	while (std::getline(s, line)) { //loop through all the lines
 		if (line.length() > 72) { //why 72? a line is 72 bytes plus a \r\n
-			queue.push_back(
+			mq.push(
 				deserialize_string(
 					line.substr(0, 71) //ditch the \r\n
 				)
 			);
 		}
 	}
-	if (queue.size() > 0) {
-		queue_read();
-	}
 }
 
 char get_index_0() {
-	return 0;
+	if (!mq.messages.size()) {
+		return -1;
+	}
+	message last = mq.read(0);
+	if (last.re[0].re) {
+		return 1;
+	} else if (last.fe[0].fe) {
+		return 0;
+	}
 }
 
 char get_index_1() {
-	return 0;
+	if (!mq.messages.size()) {
+		return -1;
+	}
+	message last = mq.read(1);
+	if (last.re[1].re) {
+		return 1;
+	} else if (last.fe[1].fe) {
+		return 0;
+	}
 }
 
 char get_index_2() {
-	return 0;
+	if (!mq.messages.size()) {
+		return -1;
+	}
+	message last = mq.read(2);
+	if (last.re[2].re) {
+		return 1;
+	} else if (last.fe[2].fe) {
+		return 0;
+	}
 }
 
 char get_index_3() {
-	return 0;
+		if (!mq.messages.size()) {
+		return -1;
+	}
+	message last = mq.read(3);
+	if (last.re[3].re) {
+		return 1;
+	} else if (last.fe[3].fe) {
+		return 0;
+	}
 }

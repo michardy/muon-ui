@@ -6,7 +6,7 @@ var pos = 1000;
 /*
  * Ze Magic Constants
  * DO NOT TOUCH!
- * Based on trial and error, vodoo magic and some limited logic.  
+ * Based on trial and error, vodoo magic, and some limited logic.  
  * 
  * Yes, I know it breaks on IOS devices and some Androids in portrait mode.
  * But this was built for TVs
@@ -48,8 +48,9 @@ console.log();
 
 function graph() {
 	for (var i = 0; i < 4; i++){
-		if (index[i] === 1) {
-		} else {
+		var status = index[i];
+		if (status === 1) {
+		} else if (status === 0) {
 			var newElement = document.createElementNS("http://www.w3.org/2000/svg", 'path');
 			newElement.setAttribute("d","M 0 "+GRAPH_LINES[i]+" L "+ LINE_LENGTH +" "+GRAPH_LINES[i]);
 			newElement.style.stroke = LINE_COLORS[i];
