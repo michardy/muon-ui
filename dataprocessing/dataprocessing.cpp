@@ -323,7 +323,7 @@ char get_index_2() {
 }
 
 char get_index_3() {
-		if (!mq.messages.size()) {
+	if (!mq.messages.size()) {
 		return -1;
 	}
 	message last = mq.read(3);
