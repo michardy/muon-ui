@@ -161,7 +161,7 @@ void daq_time::skew(short skew) {
 
 void daq_time::init (tm time, short gps_ms, unsigned long tick, unsigned long gps_tick){
 	tenthousandths = (gps_ms * 10);
-	ticks = (tick - gps_tick) % (4294967295); // modulo subtract because this slong overflows every 100 sec
+	ticks = (tick - gps_tick) % (4294967295); // modulo subtract because this long overflows every 100 sec
 }
 
 void queue::push(message m) {
@@ -248,7 +248,7 @@ message deserialize_string(std::string line) {
 				gps_time[10] = *component.c_str();
 				break;
 			case 12: // Is the GPS data valid
-				// Lets use a strange format! 'A'' for valid and 'V' for invalid.  (I have questions.)
+				// Lets use a strange format! 'A' for valid and 'V' for invalid.  (I have questions.)
 				m.gps_valid = ("A" == component);
 				break;
 			case 13: // Numer of visible GPS satellites
