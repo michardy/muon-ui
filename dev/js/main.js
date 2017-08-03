@@ -1,7 +1,7 @@
 var graphCTX = document.getElementById("grapharea");
 var graphcont = document.getElementById("graphcontainer");
 
-var pos = 1000;
+var pos = 0;
 
 /*
  * Ze Magic Constants
@@ -19,7 +19,7 @@ const GRAPH_LINES = [
 	(((3*GRAPH_HEIGHT)/5)+(GRAPH_HEIGHT/90)).toString(),
 	(((4*GRAPH_HEIGHT)/5)+(GRAPH_HEIGHT/27)).toString()
 ];
-const LINE_LENGTH = graphcont.offsetWidth;
+const LINE_LENGTH = 100;
 
 
 
@@ -50,14 +50,30 @@ function graph() {
 	for (var i = 0; i < 4; i++){
 		var status = index[i];
 		if (status === 1) {
+			state[i] = true;
 		} else if (status === 0) {
+			state[i] = false;
 			var newElement = document.createElementNS("http://www.w3.org/2000/svg", 'path');
-			newElement.setAttribute("d","M 0 "+GRAPH_LINES[i]+" L "+ LINE_LENGTH +" "+GRAPH_LINES[i]);
+			newElement.setAttribute("d","M 0 "+(GRAPH_LINES[i]+100)+" L 0 "+GRAPH_LINES[i]);
+			newElement.style.stroke = LINE_COLORS[i];
+			newElement.style.strokeWidth = (LINE_WIDTH+"px");
+			graphCTX.appendChild(newElement);
+		}
+		if (state[i]) {
+			var newElement = document.createElementNS("http://www.w3.org/2000/svg", 'path');
+			newElement.setAttribute("d","M " + pos + " "+(GRAPH_LINES[i]+100)+" L "+ (pos+LINE_LENGTH) +" "+(GRAPH_LINES[i]+100));
+			newElement.style.stroke = LINE_COLORS[i];
+			newElement.style.strokeWidth = (LINE_WIDTH+"px");
+			graphCTX.appendChild(newElement);
+		} else {
+			var newElement = document.createElementNS("http://www.w3.org/2000/svg", 'path');
+			newElement.setAttribute("d","M " + pos + " "+(GRAPH_LINES[i]+100)+" L "+ (pos+LINE_LENGTH) +" "+GRAPH_LINES[i]);
 			newElement.style.stroke = LINE_COLORS[i];
 			newElement.style.strokeWidth = (LINE_WIDTH+"px");
 			graphCTX.appendChild(newElement);
 		}
 	}
+	pos += LINE_LENGTH;
 }
 
 var ws = new WebSocket("ws://"+window.location.hostname+":8888/socket");
