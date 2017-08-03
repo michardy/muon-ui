@@ -12,7 +12,7 @@ git clone https://github.com/michardy/muon-ui.git
 Use your package manger to install:
 - gcc
 - make
-- uglifyjs
+- uglifyjs (**Specifically** the **uglify-es** variant.  Things blow up otherwise dues to use of ES6)
 - uglifycss
 
 Install emscripten:
