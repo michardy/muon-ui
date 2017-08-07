@@ -1,5 +1,6 @@
-var graphCTX = document.getElementById("grapharea");
-var graphcont = document.getElementById("graphcontainer");
+const graphCTX = document.getElementById("grapharea");
+const graphcont = document.getElementById("graphcontainer");
+
 
 var pos = 0;
 
